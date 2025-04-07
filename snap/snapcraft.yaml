@@ -1,0 +1,81 @@
+name: picamera-streaming-demo
+base: core24
+version: "0.1"
+summary: Raspberry Pi camera streaming demo
+description: A demo for streaming video from a Raspberry Pi camera using Snap.
+grade: stable
+confinement: strict
+
+parts:
+  picamera:
+    plugin: python
+    source: .
+    build-packages:
+      - git
+      - patch
+      - python3-dev
+      - python3-venv
+      - pkg-config
+      - pybind11-dev
+      - libcap-dev
+      - meson
+      - ninja-build
+      - libssl-dev
+      - openssl
+      - cmake
+      - libfmt-dev
+      - libdrm-dev
+    python-packages:
+      - jinja2
+      - pyyaml
+      - ply
+    stage-packages:
+      - libfmt-dev
+      # - libdrm-dev
+    build-environment:
+      - PKG_CONFIG_PATH: "$SNAPCRAFT_PART_INSTALL/lib/pkgconfig"
+      - LD_LIBRARY_PATH: "$SNAPCRAFT_PART_INSTALL/lib/python3.12/site-packages/libcamera:$SNAPCRAFT_PART_INSTALL/lib"
+    override-build: |
+      snapcraftctl build
+      $SNAPCRAFT_PART_INSTALL/bin/pip list
+      export PYTHON=$SNAPCRAFT_PART_INSTALL/bin/python3
+      cd $SNAPCRAFT_PART_SRC
+      git clone https://github.com/raspberrypi/libcamera.git
+      cd libcamera
+      meson setup build --buildtype=release -Dpipelines=rpi/vc4,rpi/pisp -Dipas=rpi/vc4,rpi/pisp -Dgstreamer=disabled -Dtest=false -Dlc-compliance=disabled -Dcam=disabled -Dqcam=disabled -Ddocumentation=disabled -Dpycamera=enabled -Dlibdir=lib --prefix=$SNAPCRAFT_PART_INSTALL/
+      ninja -C build install
+      cd ..
+      find $SNAPCRAFT_PART_INSTALL -name jinja2
+      $SNAPCRAFT_PART_INSTALL/bin/python3 -c "import libcamera"
+      git clone https://github.com/tomba/kmsxx.git
+      cd kmsxx
+      meson setup build --buildtype=release --prefix=$SNAPCRAFT_PART_INSTALL -Dpykms=enabled -Dlibdir=lib
+      ninja -C build install
+      cd ..
+      $SNAPCRAFT_PART_INSTALL/bin/python3 -m pip install picamera2
+      $SNAPCRAFT_PART_INSTALL/bin/python3 -c "import picamera2; from libcamera import Transform"
+      mkdir -p $SNAPCRAFT_PART_INSTALL/bin
+      cp $SNAPCRAFT_PART_SRC/pistream $SNAPCRAFT_PART_INSTALL/bin/
+      find /root -name libfmt.so.9
+    stage:
+      - bin/pistream
+      - lib/*
+      - usr/lib/aarch64-linux-gnu/*
+      - share/libcamera/ipa*
+
+apps:
+  picamera-streaming-demo:
+    command: bin/pistream
+    environment:
+      LD_LIBRARY_PATH: "$LD_LIBRARY_PATH:$SNAP/lib:$SNAP/usr/lib:$SNAP/lib/python3.12/site-packages/libcamera:$SNAP/usr/lib/aarch64-linux-gnu"
+      PYTHONPATH: "$PYTHONPATH:$SNAP/lib/python3.12/site-packages"
+      LIBCAMERA_IPA_MODULE_PATH: "$SNAP/lib/libcamera"
+      # LIBCAMERA_IPA_CONFIG_PATH: "$SNAP/share/libcamera/ipa/rpi/pisp:$SNAP/share/libcamera/ipa/rpi/vc4"
+      LIBCAMERA_IPA_CONFIG_PATH: "$SNAP/share/libcamera/ipa/rpi/vc4"
+    # daemon: simple
+    plugs:
+      - mount-observe
+      - network
+      - network-bind
+      - opengl
+      - hardware-observe
