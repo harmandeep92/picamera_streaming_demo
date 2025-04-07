@@ -98,6 +98,7 @@ class StreamingServer(socketserver.ThreadingMixIn, server.HTTPServer):
 
 if __name__ == "__main__":
     # Initialize Picamera2
+    print(f"global cameras: {Picamera2.global_camera_info()}")
     picam2 = Picamera2()
     config = picam2.create_video_configuration(
         main={"size": (1280, 720)},

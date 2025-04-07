@@ -71,7 +71,7 @@ apps:
       PYTHONPATH: "$PYTHONPATH:$SNAP/lib/python3.12/site-packages"
       LIBCAMERA_IPA_MODULE_PATH: "$SNAP/lib/libcamera"
       # LIBCAMERA_IPA_CONFIG_PATH: "$SNAP/share/libcamera/ipa/rpi/pisp:$SNAP/share/libcamera/ipa/rpi/vc4"
-      LIBCAMERA_IPA_CONFIG_PATH: "$SNAP/share/libcamera/ipa/rpi/vc4"
+      LIBCAMERA_RPI_TUNING_FILE: "$SNAP/share/libcamera/ipa/rpi/pisp/imx477.json"
     # daemon: simple
     plugs:
       - mount-observe
