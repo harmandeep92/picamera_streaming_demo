@@ -7,7 +7,17 @@ grade: stable
 confinement: strict
 
 parts:
+  pivariety-sdk:
+    plugin: nil
+    override-pull: |
+      curl -s --compressed "https://arducam.github.io/arducam_ppa/KEY.gpg" | apt-key add -
+      curl -s --compressed -o /etc/apt/sources.list.d/arducam_list_files.list "https://arducam.github.io/arducam_ppa/arducam_list_files.list"
+      apt update
+      apt install arducam-pivariety-sdk-dev
+
+
   picamera:
+    after: [pivariety-sdk]
     plugin: python
     source: .
     build-packages:
@@ -40,7 +50,7 @@ parts:
       $SNAPCRAFT_PART_INSTALL/bin/pip list
       export PYTHON=$SNAPCRAFT_PART_INSTALL/bin/python3
       cd $SNAPCRAFT_PART_SRC
-      git clone https://github.com/raspberrypi/libcamera.git
+      git clone https://github.com/ArduCAM/libcamera.git
       cd libcamera
       meson setup build --buildtype=release -Dpipelines=rpi/vc4,rpi/pisp -Dipas=rpi/vc4,rpi/pisp -Dgstreamer=disabled -Dtest=false -Dlc-compliance=disabled -Dcam=disabled -Dqcam=disabled -Ddocumentation=disabled -Dpycamera=enabled -Dlibdir=lib --prefix=$SNAPCRAFT_PART_INSTALL/
       ninja -C build install
