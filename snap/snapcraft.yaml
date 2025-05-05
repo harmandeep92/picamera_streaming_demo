@@ -80,15 +80,15 @@ parts:
 
   overlay:
     plugin: nil
-    source: .
+    source: overlays
     build-packages:
       - device-tree-compiler
     override-build: |
-      dtc -@ -I dts -O dtb -o imx477.dtbo ./overlays/imx477-overlay.dts
+      dtc -@ -I dts -O dtb -o imx477.dtbo imx477-overlay.dts
       mkdir -p $SNAPCRAFT_PART_INSTALL/overlays
       cp imx477.dtbo $SNAPCRAFT_PART_INSTALL/overlays/
     stage:
-      - imx477.dtbo
+      - overlays/imx477.dtbo
 
   scripts:
     plugin: dump

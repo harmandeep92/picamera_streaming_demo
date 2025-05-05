@@ -47,7 +47,7 @@
 			#size-cells = <0>;
 			status = "okay";
 
-			/include/ "../imx477_378.dtsi"
+			/include/ "imx477_378.dtsi"
 
 			vcm: ad5398@c {
 				compatible = "adi,ad5398";
